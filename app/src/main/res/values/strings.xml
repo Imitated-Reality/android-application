@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Imitated Reality</string>
+
+    <string name="title_activity_start_streaming">StartStreaming</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+
+    <string name="title_activity_view_streaming">ViewStreaming</string>
+
+    <string name="title_activity_stream">Stream</string>
+
+    <string name="title_activity_video_view_stream">VideoViewStream</string>
+</resources>
