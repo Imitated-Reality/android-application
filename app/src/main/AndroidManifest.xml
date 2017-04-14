@@ -54,7 +54,6 @@
             android:name=".ViewStreaming"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_view_streaming"
-            android:screenOrientation="landscape"
             android:theme="@style/FullscreenTheme" />
         <activity android:name=".IP" />
         <activity android:name=".Splash"

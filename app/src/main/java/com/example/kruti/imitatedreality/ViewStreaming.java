@@ -3,12 +3,13 @@ package com.example.kruti.imitatedreality;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.Environment;
+import android.os.AsyncTask;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,15 +20,22 @@ import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
-import android.webkit.ClientCertRequest;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.VideoView;
 
-import java.io.File;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 
 public class ViewStreaming extends AppCompatActivity implements SensorEventListener {
@@ -38,6 +46,7 @@ public class ViewStreaming extends AppCompatActivity implements SensorEventListe
     Sensor mSensorMagnetometer;
     TextView lupdate;
     TextView rupdate;
+    String ip, port;
     private final float[] mAccelerometerReading = new float[3];
     private final float[] mMagnetometerReading = new float[3];
 
@@ -98,8 +107,15 @@ public class ViewStreaming extends AppCompatActivity implements SensorEventListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_view_streaming);
+
+        Display display = ((WindowManager) this.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+        int rotation = display.getRotation();
+
+        Intent intent = getIntent();
+        ip = intent.getStringExtra("ip");
+        port = intent.getStringExtra("port");
+
         lupdate = (TextView) findViewById(R.id.leftOrient);
         rupdate = (TextView) findViewById(R.id.rightOrient);
 
@@ -112,6 +128,12 @@ public class ViewStreaming extends AppCompatActivity implements SensorEventListe
         mVisible = true;
         mControlsView = findViewById(R.id.fullscreen_content_controls);
         mContentView = findViewById(R.id.fullscreen_content);
+
+        if (rotation==Surface.ROTATION_0) {
+            setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        } else {
+            setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+        }
 
         mContentView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -142,8 +164,8 @@ public class ViewStreaming extends AppCompatActivity implements SensorEventListe
         w2.setScrollbarFadingEnabled(false);
 
 
-        w1.loadUrl("http://192.168.43.102:5000/cam1/");
-        w2.loadUrl("http://192.168.43.102:5000/cam2/");
+        w1.loadUrl("http://"+ip+":"+port+"/cam1/");
+        w2.loadUrl("http://"+ip+":"+port+"/cam2/");
 
 
     }
@@ -154,7 +176,10 @@ public class ViewStreaming extends AppCompatActivity implements SensorEventListe
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
 
-
+        w1.loadUrl("http://"+ip+":"+port+"/cam1/");
+        w2.loadUrl("http://"+ip+":"+port+"/cam2/");
+        Toast t = Toast.makeText(this, "Connected", Toast.LENGTH_LONG);
+        t.show();
         delayedHide(100);
     }
 
@@ -205,35 +230,14 @@ public class ViewStreaming extends AppCompatActivity implements SensorEventListe
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-
-        changeActivity1();
-    }
-
-    public void changeActivity1()
-    {
-        String rotation=getRotation(this);
-        if(rotation=="portrait" || rotation=="reverse portrait")
-        {
-            Intent intent1=new Intent(ViewStreaming.this,StartStreaming.class);
-            startActivity(intent1);
-        }
-    }
-
-    public String getRotation(Context context){
-
-
-        Display display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+        //changeActivity1();
+        Display display = ((WindowManager) this.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
         int rotation = display.getRotation();
 
-        switch (rotation) {
-            case Surface.ROTATION_0:
-                return "portrait";
-            case Surface.ROTATION_90:
-                return "landscape";
-            case Surface.ROTATION_180:
-                return "reverse portrait";
-            default:
-                return "reverse landscape";
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE && rotation==Surface.ROTATION_0) {
+            setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        } else {
+            setRequestedOrientation (ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
         }
     }
 
@@ -251,24 +255,24 @@ public class ViewStreaming extends AppCompatActivity implements SensorEventListe
         callWebView();
     }
 
+
+
+
     public void callWebView(){
-        w1.getSettings().setJavaScriptEnabled(true);
-        w2.getSettings().setJavaScriptEnabled(true);
+
+
         try{
-            byte[] ipAddr = new byte[]{10, 80, 7, 85};
-            if(InetAddress.getByAddress(ipAddr).isReachable(5)){
-                w1.loadUrl("http://192.168.43.102:5000/cam1/");
-                w2.loadUrl("http://192.168.43.102:5000/cam2/");
-            }
-            else{
-                w1.loadUrl("file:///android_asset/CustomErrorHandling");
-                w2.loadUrl("file:///android_asset/CustomErrorHandling");
-            }
+            //if(isHostAvailable(ip, port)){
+            w1.loadUrl("http://"+ip+":"+port+"/cam1/");
+            w2.loadUrl("http://"+ip+":"+port+"/cam2/");
+            Toast t = Toast.makeText(this, "Connected", Toast.LENGTH_LONG);
+            t.show();
         }catch(Exception e){
             w1.loadUrl("file:///android_asset/CustomErrorHandling");
             w2.loadUrl("file:///android_asset/CustomErrorHandling");
+            Toast t = Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG);
+            t.show();
         }
-
     }
 
     @Override

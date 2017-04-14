@@ -33,6 +33,8 @@ public class MainActivity extends AppCompatActivity {
         username=(EditText)findViewById(R.id.uname);
         password=(EditText)findViewById(R.id.pass);
 
+        Intent intent=new Intent(MainActivity.this,IP.class);
+        startActivity(intent);
     }
 
     @Override
@@ -92,7 +94,6 @@ public class MainActivity extends AppCompatActivity {
         if(!flag)
         {
             Intent intent=new Intent(MainActivity.this,IP.class);
-
             startActivity(intent);
         }
         Log.d("abcd", "defg");
