@@ -46,11 +46,6 @@
             android:label="@string/title_activity_start_streaming"
             android:theme="@style/FullscreenTheme" />
         <activity
-            android:name=".Stream"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_stream"
-            android:theme="@style/FullscreenTheme" />
-        <activity
             android:name=".ViewStreaming"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_view_streaming"

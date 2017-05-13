@@ -24,6 +24,7 @@ import android.webkit.WebView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -47,6 +48,9 @@ public class ViewStreaming extends AppCompatActivity implements SensorEventListe
     TextView lupdate;
     TextView rupdate;
     String ip, port;
+    String webpage;
+    int curOrient;
+    private int curRotAng=0;
     private final float[] mAccelerometerReading = new float[3];
     private final float[] mMagnetometerReading = new float[3];
 
@@ -276,7 +280,7 @@ public class ViewStreaming extends AppCompatActivity implements SensorEventListe
     }
 
     @Override
-    public void onSensorChanged(SensorEvent event) {
+    public void onSensorChanged(SensorEvent event){
         if (event.sensor == mSensorAccelerometer) {
             System.arraycopy(event.values, 0, mAccelerometerReading, 0, mAccelerometerReading.length);
         }
@@ -287,15 +291,76 @@ public class ViewStreaming extends AppCompatActivity implements SensorEventListe
         mSensorManager.getOrientation(mRotationMatrix, mOrientationAngles);
         mLastRotationMatrix = mRotationMatrix;
         int x = (int)(mOrientationAngles[0]*180/3.14);
-        if(x < 0) x = 360+x;
-
-        String str = "x: " + x + (char) 0x00B0;
-        lupdate.setText(str);
-        rupdate.setText(str);
+        //if(x < 0) x = 360+x;
+        if(curRotAng==0) curRotAng = x;
+        else{
+            if(x-curRotAng > 35 && x-curRotAng < 45){
+                curOrient = x-curRotAng;
+                lupdate.setText("Rotate right : " + curOrient + (char) 0x00B0 + " X : " + x + (char) 0x00B0);
+                rupdate.setText("Rotate right : " + curOrient + (char) 0x00B0 + " X : " + x + (char) 0x00B0);
+                new SetOrient().execute("");
+            }
+            else if(x-curRotAng > 80 && x-curRotAng < 90){
+                curOrient = x-curRotAng;
+                lupdate.setText("Rotate right : " + curOrient + (char) 0x00B0 + " X : " + x + (char) 0x00B0);
+                rupdate.setText("Rotate right : " + curOrient + (char) 0x00B0 + " X : " + x + (char) 0x00B0);
+                new SetOrient().execute("");
+            }
+            else if(x-curRotAng < -35 && x-curRotAng > -45){
+                curOrient = x-curRotAng;
+                lupdate.setText("Rotate left : " + curOrient + (char) 0x00B0 + " X : " + x + (char) 0x00B0);
+                rupdate.setText("Rotate left : " + curOrient + (char) 0x00B0 + " X : " + x + (char) 0x00B0);
+                new SetOrient().execute("");
+            }
+            else if(x-curRotAng < -80 && x-curRotAng > -90){
+                curOrient = x-curRotAng;
+                lupdate.setText("Rotate left : " + curOrient + (char) 0x00B0 + " X : " + x + (char) 0x00B0);
+                rupdate.setText("Rotate left : " + curOrient + (char) 0x00B0 + " X : " + x + (char) 0x00B0);
+                new SetOrient().execute("");
+            }
+        }
+        //String str = "x: " + x + (char) 0x00B0;
+        //lupdate.setText(str);
+        //rupdate.setText(str);
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
+    }
+
+    private class SetOrient extends AsyncTask<String, Void, String> {
+
+        @Override
+        protected String doInBackground(String... params) {
+            try{
+                URL url = new URL("http://"+ip+":"+port+"/changeRotation");
+                HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                con.setDoOutput( true );
+                con.setInstanceFollowRedirects( false );
+                con.setRequestMethod( "POST" );
+                con.setRequestProperty( "Content-Type", "application/x-www-form-urlencoded");
+                con.setRequestProperty( "charset", "utf-8");
+                con.setUseCaches( false );
+                try( DataOutputStream wr = new DataOutputStream( con.getOutputStream())) {
+                    wr.write( curOrient );
+                }
+                //Toast.makeText(t, webPage, Toast.LENGTH_LONG).show();
+            }catch (Exception e){
+                //Toast.makeText(t, e.toString(), Toast.LENGTH_LONG).show();
+            }
+            return "Done";
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+        }
+
+        @Override
+        protected void onPreExecute() {
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {}
     }
 }

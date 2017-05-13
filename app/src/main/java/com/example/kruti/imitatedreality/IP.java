@@ -98,7 +98,7 @@ public class IP extends AppCompatActivity {
         @Override
         protected String doInBackground(String... params) {
             try{
-                URL url = new URL("http://"+ipAddr+":"+portAddr+"/ping");
+                URL url = new URL("http://"+ipAddr.trim()+":"+portAddr.trim()+"/ping");
                 HttpURLConnection con = (HttpURLConnection) url.openConnection();
                 con.connect();
                 InputStream is = con.getInputStream();
